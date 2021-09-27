@@ -1,0 +1,3 @@
+[submodule "idf-pms5003"]
+	path = idf-pms5003
+	url = https://github.com/pgatti86/idf-pms5003.git
