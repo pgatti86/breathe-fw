@@ -11,7 +11,12 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "esp_spi_flash.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "esp_event.h"
+#include "wifi-manager.h"
 
+static const char *TAG = "breathe-app";
 
 void app_main(void)
 {
@@ -29,12 +34,16 @@ void app_main(void)
 
     printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024),
             (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
-
-    for (int i = 10; i >= 0; i--) {
-        printf("Restarting in %d seconds...\n", i);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-    printf("Restarting now.\n");
     fflush(stdout);
-    esp_restart();
+    
+    esp_event_loop_create_default();
+
+    //Initialize NVS
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      nvs_flash_erase();
+      nvs_flash_init();
+    }
+    
+    wifi_manager_init();
 }
