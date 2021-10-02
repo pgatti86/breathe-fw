@@ -1,7 +1,7 @@
 #include "wifi-manager.h"
+#include "wifi-events.h"
 
 #include "esp_wifi.h"
-#include "esp_event.h"
 #include "freertos/event_groups.h"
 #include "esp_log.h"
 #include "freertos/task.h"
@@ -20,6 +20,10 @@ static int connection_retry_count = 0;
 
 static bool is_connected = false;
 
+static void wifi_manager_send_event(int32_t event_id);
+
+ESP_EVENT_DEFINE_BASE(WIFI_MANAGER_EVENTS);
+
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
 
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
@@ -28,12 +32,14 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         ESP_LOGI(TAG, "retry to connect to the AP");
         is_connected = false;
+        wifi_manager_send_event(WIFI_EVENT_DISCONNECTED);
         xEventGroupSetBits(s_wifi_event_group, WIFI_RETRY_CONNECTION_BIT);
         connection_retry_count++;
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         is_connected = true;
+        wifi_manager_send_event(WIFI_EVENT_CONNECTED);
         connection_retry_count = 0;
     }
 }
@@ -94,6 +100,14 @@ esp_err_t wifi_manager_init(void) {
     }
     
     return result_code;
+}
+
+bool wifi_manager_is_connected() {
+    return is_connected;
+}
+
+static void wifi_manager_send_event(int32_t event_id) {
+    esp_event_post(WIFI_MANAGER_EVENTS, event_id, NULL, 0, portMAX_DELAY);
 }
 
 void wifi_manager_deinit(void) {

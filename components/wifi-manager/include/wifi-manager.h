@@ -5,6 +5,8 @@
 
 esp_err_t wifi_manager_init(void);
 
+bool wifi_manager_is_connected();
+
 void wifi_manager_deinit(void);
 
 #endif

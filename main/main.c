@@ -13,10 +13,21 @@
 #include "esp_spi_flash.h"
 #include "esp_log.h"
 #include "nvs_flash.h"
-#include "esp_event.h"
+#include "wifi-events.h"
 #include "wifi-manager.h"
 
 static const char *TAG = "breathe-app";
+
+static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
+    if (id == WIFI_EVENT_CONNECTED) {
+        // START MQTT
+        ESP_LOGI(TAG, "Connect to MQTT");
+        return;
+    } 
+
+    // STOP MQTT
+    ESP_LOGI(TAG, "Disconnect from MQTT");
+}
 
 void app_main(void)
 {
@@ -38,12 +49,15 @@ void app_main(void)
     
     esp_event_loop_create_default();
 
-    //Initialize NVS
+    // Initialize NVS
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
       nvs_flash_erase();
       nvs_flash_init();
     }
     
+    // Register for Wifi events
+    esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
+
     wifi_manager_init();
 }
