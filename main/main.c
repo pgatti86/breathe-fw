@@ -1,11 +1,3 @@
-/* Hello World Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -15,22 +7,21 @@
 #include "nvs_flash.h"
 #include "wifi-events.h"
 #include "wifi-manager.h"
+#include "mqtt-manager.h"
 
 static const char *TAG = "breathe-app";
 
 static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
     if (id == WIFI_EVENT_CONNECTED) {
-        // START MQTT
-        ESP_LOGI(TAG, "Connect to MQTT");
+        mqtt_manager_connect();
         return;
     } 
 
-    // STOP MQTT
-    ESP_LOGI(TAG, "Disconnect from MQTT");
+    mqtt_manager_disconnect();
 }
 
-void app_main(void)
-{
+void app_main(void) {
+
     printf("Hello world!\n");
 
     /* Print chip information */
@@ -44,8 +35,10 @@ void app_main(void)
     printf("silicon revision %d, ", chip_info.revision);
 
     printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024),
-            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");        
     fflush(stdout);
+
+    ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
     
     esp_event_loop_create_default();
 
@@ -60,4 +53,5 @@ void app_main(void)
     esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
 
     wifi_manager_init();
+    mqtt_manager_init();
 }
