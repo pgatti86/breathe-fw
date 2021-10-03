@@ -69,6 +69,17 @@ bool mqtt_manager_is_connected() {
     return is_connected;
 }
 
+bool mqtt_manager_publish(char *topic, char *json) {
+
+    if (!is_connected)
+        return false;
+
+    int data_len = 0;
+    int qos = 0;
+    int retain = 0;
+    return esp_mqtt_client_publish(client, topic, json, data_len, qos, retain) > 0;
+}
+
 esp_err_t mqtt_manager_disconnect() {
 
     if (!mqtt_manager_is_connected()) {

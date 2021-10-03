@@ -9,6 +9,8 @@ esp_err_t mqtt_manager_connect();
 
 bool mqtt_manager_is_connected();
 
+bool mqtt_manager_publish(char *topic, char *json);
+
 esp_err_t mqtt_manager_disconnect();
 
 #endif
