@@ -8,8 +8,22 @@
 #include "wifi-events.h"
 #include "wifi-manager.h"
 #include "mqtt-manager.h"
+#include "idf-pmsx003.h"
+#include "pmsx-config.h"
 
 static const char *TAG = "breathe-app";
+
+static void pms_callback(pm_data_t *sensor_data) {
+    ESP_LOGI(TAG, "pm10: %d ug/m3", sensor_data->pm10);
+    ESP_LOGI(TAG, "pm2.5: %d ug/m3", sensor_data->pm2_5);
+    ESP_LOGI(TAG, "pm1.0: %d ug/m3", sensor_data->pm1_0);
+    ESP_LOGI(TAG, "particles > 0.3um / 0.1L: %d", sensor_data->particles_03um);
+    ESP_LOGI(TAG, "particles > 0.5um / 0.1L: %d", sensor_data->particles_05um);
+    ESP_LOGI(TAG, "particles > 1.0um / 0.1L: %d", sensor_data->particles_10um);
+    ESP_LOGI(TAG, "particles > 2.5um / 0.1L: %d", sensor_data->particles_25um);
+    ESP_LOGI(TAG, "particles > 5.0um / 0.1L: %d", sensor_data->particles_50um);
+    ESP_LOGI(TAG, "particles > 10.0um / 0.1L: %d", sensor_data->particles_100um);
+}
 
 static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
     if (id == WIFI_EVENT_CONNECTED) {
@@ -51,6 +65,9 @@ void app_main(void) {
     
     // Register for Wifi events
     esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
+
+    pms_conf.callback = &pms_callback,
+    idf_pmsx5003_init(&pms_conf);
 
     wifi_manager_init();
     mqtt_manager_init();
