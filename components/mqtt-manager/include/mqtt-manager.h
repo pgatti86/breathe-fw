@@ -9,7 +9,7 @@ esp_err_t mqtt_manager_connect();
 
 bool mqtt_manager_is_connected();
 
-bool mqtt_manager_publish(char *topic, char *data);
+bool mqtt_manager_publish(const char *topic, const char *data);
 
 esp_err_t mqtt_manager_disconnect();
 
