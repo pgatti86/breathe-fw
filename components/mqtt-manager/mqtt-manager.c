@@ -49,7 +49,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-esp_err_t mqtt_manager_init() {
+uint32_t mqtt_manager_init() {
 
     esp_mqtt_client_config_t mqtt_cfg = {
         .uri = CONFIG_BROKER_URL,
@@ -59,7 +59,7 @@ esp_err_t mqtt_manager_init() {
     return esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
 }
 
-esp_err_t mqtt_manager_connect() {
+uint32_t mqtt_manager_connect() {
     esp_err_t status = is_started ? esp_mqtt_client_reconnect(client) : esp_mqtt_client_start(client);
     is_started = true;
     return status;
@@ -80,7 +80,7 @@ bool mqtt_manager_publish(const char *topic, const char *data) {
     return esp_mqtt_client_publish(client, topic, data, data_len, qos, retain) > 0;
 }
 
-esp_err_t mqtt_manager_disconnect() {
+uint32_t mqtt_manager_disconnect() {
 
     if (!mqtt_manager_is_connected()) {
         return ESP_OK;

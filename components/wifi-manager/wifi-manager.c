@@ -62,7 +62,7 @@ static void wifi_manager_reconnection_task(void *ctx) {
     vTaskDelete(NULL);
 }
 
-esp_err_t wifi_manager_init(void) {
+uint32_t wifi_manager_init(void) {
 
     s_wifi_event_group = xEventGroupCreate();
     esp_err_t result_code = esp_netif_init();
