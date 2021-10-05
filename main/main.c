@@ -11,6 +11,7 @@
 #include "idf-pmsx003.h"
 #include "data-sender.h"
 #include "pmsx-config.h"
+#include "device-helper.h"
 
 static const char *TAG = "breathe-app";
 
@@ -25,7 +26,8 @@ static void pms_callback(pm_data_t *sensor_data) {
     ESP_LOGI(TAG, "particles > 5.0um / 0.1L: %d", sensor_data->particles_50um);
     ESP_LOGI(TAG, "particles > 10.0um / 0.1L: %d", sensor_data->particles_100um);
 
-    data_sender_send_pms_data(sensor_data);
+    char *device_id = device_helper_get_device_id();
+    data_sender_send_pms_data(device_id, sensor_data);
 }
 
 static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {

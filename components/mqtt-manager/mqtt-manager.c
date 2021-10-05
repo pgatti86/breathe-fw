@@ -53,6 +53,8 @@ uint32_t mqtt_manager_init() {
 
     esp_mqtt_client_config_t mqtt_cfg = {
         .uri = CONFIG_BROKER_URL,
+        .username = CONFIG_MQTT_USERNAME,
+        .password = CONFIG_MQTT_PASSWORD
     };
 
     client = esp_mqtt_client_init(&mqtt_cfg);
