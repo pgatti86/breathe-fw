@@ -30,4 +30,10 @@ config MQTT_PASSWORD
     help
         Device password for mqtt connection
 
+config SNTP_SERVER
+    string "SNTP server"
+    default "pool.ntp.org"
+    help
+        SNTP server        
+
 endmenu

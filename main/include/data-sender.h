@@ -4,6 +4,6 @@
 #include <stdbool.h>
 #include "pmsx-data.h"
 
-bool data_sender_send_pms_data(char *device_id, pm_data_t *data);
+bool data_sender_send_pms_data(pm_data_t *data);
 
 #endif
