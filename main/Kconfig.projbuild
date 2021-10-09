@@ -1,17 +1,5 @@
 menu "Breathe config"
 
-config SSID
-    string "SSID"
-    default "SSID"
-    help
-        SSID (network name) to connect to.
-
-config PASSWORD
-    string "PASSWORD"
-    default "password"
-    help
-        WiFi password (WPA or WPA2) to use.
-
 config BROKER_URL
     string "Broker URL"
     default "mqtt://mqtt.eclipseprojects.io"

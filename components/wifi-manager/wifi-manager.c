@@ -74,25 +74,8 @@ uint32_t wifi_manager_init(void) {
 
     result_code += esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL);
     result_code += esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &wifi_event_handler, NULL);
-
-    wifi_config_t wifi_config = {
-        .sta = {
-            .ssid = CONFIG_SSID,
-            .password = CONFIG_PASSWORD,
-            /* Setting a password implies station will connect to all security modes including WEP/WPA.
-             * However these modes are deprecated and not advisable to be used. In case your Access point
-             * doesn't support WPA2, these mode can be enabled by commenting below line */
-	        .threshold.authmode = WIFI_AUTH_WPA2_PSK,
-
-            .pmf_cfg = {
-                .capable = true,
-                .required = false
-            },
-        },
-    };
-
+    
     result_code += esp_wifi_set_mode(WIFI_MODE_STA);
-    result_code += esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     
     if (result_code == ESP_OK) {
         xTaskCreate(wifi_manager_reconnection_task, "wifi reconnect task", 2048, NULL, 5, NULL);

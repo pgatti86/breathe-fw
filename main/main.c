@@ -12,6 +12,9 @@
 #include "data-sender.h"
 #include "pmsx-config.h"
 #include "time-manager.h"
+#include "wifi-provisioning-events.h"
+#include "wifi-provisioning.h"
+#include "storage-manager.h"
 
 static const char *TAG = "breathe-app";
 
@@ -27,6 +30,14 @@ static void pms_callback(pm_data_t *sensor_data) {
     ESP_LOGI(TAG, "particles > 10.0um / 0.1L: %d", sensor_data->particles_100um);
 
     data_sender_send_pms_data(sensor_data);
+}
+
+static void wifi_provisioning_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
+    if (id == PROVISIONING_COMPLETED) {
+        storage_manager_set_enrollment_status(true);
+        esp_restart();
+        return;
+    } 
 }
 
 static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
@@ -63,17 +74,21 @@ void app_main(void) {
 
     // Initialize NVS
     esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    if (ret != ESP_OK) {
       nvs_flash_erase();
       nvs_flash_init();
     }
-    
-    // Register for Wifi events
-    esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
 
-    pms_conf.callback = &pms_callback,
-    idf_pmsx5003_init(&pms_conf);
+    storage_manager_init();
 
-    wifi_manager_init();
-    mqtt_manager_init();
+    if (storage_manager_has_enrollment_done()) {
+        esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
+        pms_conf.callback = &pms_callback,
+        idf_pmsx5003_init(&pms_conf);
+        wifi_manager_init();
+        mqtt_manager_init();
+    } else {
+        esp_event_handler_register(WIFI_MANAGER_PROVISIONING_EVENTS, ESP_EVENT_ANY_ID, wifi_provisioning_event_handler, NULL);
+        wifi_provisioning_start();
+    }
 }
