@@ -9,7 +9,14 @@ static nvs_handle_t nvs_partition_handle;
 
 bool storage_manager_init() {
 
-    esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_partition_handle);
+    // Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err != ESP_OK) {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
+
+    err += nvs_open("storage", NVS_READWRITE, &nvs_partition_handle);
     return err == ESP_OK;
 }
 
