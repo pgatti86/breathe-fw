@@ -5,8 +5,10 @@
 
 bool storage_manager_init();
 
-bool storage_manager_set_enrollment_status(bool completed);
+char *storage_manager_read_file(char *file_path);
 
-bool storage_manager_has_enrollment_done();
+bool storage_manager_get_prefs_bool_value(char *key, bool def_value);
+
+bool storage_manager_set_prefs_bool_value(char *key, bool value);
 
 #endif
