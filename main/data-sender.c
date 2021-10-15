@@ -3,6 +3,7 @@
 #include "mqtt-manager.h"
 #include "device-helper.h"
 #include "time-manager.h"
+#include "app-models.h"
 #include "cJSON.h"
 
 static const char *POLLUTION_TELEMETRY_TEMPLATE_TOPIC = "%s/telemetry/pollution";
@@ -54,14 +55,17 @@ static cJSON* data_sender_prepare_pms_message(char *device_id, pm_data_t *data) 
 
 bool data_sender_send_pms_data(pm_data_t *data) {
     
-    char *device_id = device_helper_get_device_id();
+    device_data_t *device_data = device_helper_get_device_config();
+    if (device_data == NULL) {
+        return false;
+    }
 
-    cJSON *json_data = data_sender_prepare_pms_message(device_id, data);
+    cJSON *json_data = data_sender_prepare_pms_message(device_data->uid, data);
     const char *out = cJSON_PrintUnformatted(json_data);
     cJSON_Delete(json_data);
     
-    char topic[40] = {'\0'};
-    sprintf(topic, POLLUTION_TELEMETRY_TEMPLATE_TOPIC, device_id);
+    char topic[80] = {'\0'};
+    sprintf(topic, POLLUTION_TELEMETRY_TEMPLATE_TOPIC, device_data->uid);
 
     return mqtt_manager_publish(topic, out);
 }

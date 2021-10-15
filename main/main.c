@@ -15,6 +15,7 @@
 #include "wifi-provisioning-events.h"
 #include "wifi-provisioning.h"
 #include "storage-manager.h"
+#include "device-helper.h"
 
 static const char *TAG = "breathe-app";
 
@@ -34,7 +35,7 @@ static void pms_callback(pm_data_t *sensor_data) {
 
 static void wifi_provisioning_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
     if (id == PROVISIONING_COMPLETED) {
-        storage_manager_set_enrollment_status(true);
+        device_helper_set_enrollment_status(true);
         esp_restart();
         return;
     } 
@@ -74,7 +75,7 @@ void app_main(void) {
 
     storage_manager_init();
 
-    if (storage_manager_has_enrollment_done()) {
+    if (device_helper_is_enrollment_completed()) {
         esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
         pms_conf.callback = &pms_callback,
         idf_pmsx5003_init(&pms_conf);
