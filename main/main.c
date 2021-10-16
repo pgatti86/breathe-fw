@@ -27,7 +27,7 @@ static void pms_callback(pm_data_t *sensor_data) {
 static void wifi_provisioning_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
     
     if (id == PROVISIONING_COMPLETED) {
-        device_helper_set_enrollment_status(true);
+        device_helper_set_enrollment_status(COMPLETED);
         esp_restart();
         return;
     } 
