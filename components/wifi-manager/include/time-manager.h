@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#define ISO_DATE_LENGTH 18
+#define ISO_DATE_LENGTH 21
 
 void time_manager_sync_time();
 

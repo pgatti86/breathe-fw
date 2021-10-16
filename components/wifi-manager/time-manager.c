@@ -59,5 +59,5 @@ void time_manager_format_time(char *out, int length) {
     struct tm timeinfo = { 0 };
     time(&now);
     localtime_r(&now, &timeinfo);
-    strftime(out, length, "%Y-%m-%dT%H:%MZ", &timeinfo);
+    strftime(out, length, "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
 }
