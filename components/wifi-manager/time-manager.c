@@ -45,6 +45,7 @@ void time_manager_sync_time() {
 }
 
 bool time_manager_is_time_synched() {
+    
     time_t now;
     struct tm timeinfo;
     time(&now);

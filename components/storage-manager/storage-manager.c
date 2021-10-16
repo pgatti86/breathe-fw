@@ -20,8 +20,8 @@ static char* storage_manager_read_file_in_buffer(FILE* f) {
 		return NULL;
 	}
 
-	char  *buffer;
-	long  numbytes;
+	char *buffer;
+	long numbytes;
 
 	/* Get the number of bytes */
 	fseek(f, 0L, SEEK_END);
@@ -33,7 +33,8 @@ static char* storage_manager_read_file_in_buffer(FILE* f) {
 
 	/* grab sufficient memory for the
 	buffer to hold the text */
-	buffer = (char*)calloc(numbytes, sizeof(char));
+    uint32_t buffer_size = numbytes + 1;
+	buffer = (char*)calloc(buffer_size, sizeof(char));
 
 	/* memory error */
 	if (buffer == NULL) {
@@ -43,7 +44,7 @@ static char* storage_manager_read_file_in_buffer(FILE* f) {
 
 	/* copy all the text into the buffer */
 	fread(buffer, sizeof(char), numbytes, f);
-	buffer[numbytes -1] = '\0';
+	buffer[buffer_size -1] = '\0';
 	return buffer;
 }
 
