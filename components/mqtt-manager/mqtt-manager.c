@@ -49,12 +49,13 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     }
 }
 
-uint32_t mqtt_manager_init() {
+uint32_t mqtt_manager_init(mqtt_certificates_t *mqtt_certs) {
 
     esp_mqtt_client_config_t mqtt_cfg = {
         .uri = CONFIG_BROKER_URL,
-        .username = CONFIG_MQTT_USERNAME,
-        .password = CONFIG_MQTT_PASSWORD
+        .cert_pem = mqtt_certs->ca_cert,
+        .client_cert_pem = mqtt_certs->device_cert,
+        .client_key_pem = mqtt_certs->device_key
     };
 
     client = esp_mqtt_client_init(&mqtt_cfg);
@@ -62,12 +63,14 @@ uint32_t mqtt_manager_init() {
 }
 
 uint32_t mqtt_manager_connect() {
+
     esp_err_t status = is_started ? esp_mqtt_client_reconnect(client) : esp_mqtt_client_start(client);
     is_started = true;
     return status;
 }
 
 bool mqtt_manager_is_connected() {
+    
     return is_connected;
 }
 

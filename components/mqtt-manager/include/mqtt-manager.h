@@ -4,7 +4,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-uint32_t mqtt_manager_init();
+typedef struct {
+    char *ca_cert;
+    char *device_cert;
+    char *device_key;
+} mqtt_certificates_t;
+
+uint32_t mqtt_manager_init(mqtt_certificates_t *mqtt_certs);
 
 uint32_t mqtt_manager_connect();
 
