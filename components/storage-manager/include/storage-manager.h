@@ -11,4 +11,6 @@ bool storage_manager_get_prefs_bool_value(char *key, bool def_value);
 
 bool storage_manager_set_prefs_bool_value(char *key, bool value);
 
+bool storage_manager_reset();
+
 #endif

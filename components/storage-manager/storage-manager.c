@@ -120,3 +120,11 @@ bool storage_manager_set_prefs_bool_value(char *key, bool value) {
     err += nvs_commit(nvs_partition_handle);
     return err == ESP_OK;
 }
+
+bool storage_manager_reset() {
+    
+    esp_err_t err = nvs_flash_erase();
+    err += nvs_flash_init();
+    
+    return  err == ESP_OK;
+}
