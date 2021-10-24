@@ -16,6 +16,8 @@
 #include "wifi-provisioning.h"
 #include "storage-manager.h"
 #include "device-helper.h"
+#include "gpio-manager.h"
+#include "driver/gpio.h"
 
 static const char *TAG = "breathe-app";
 
@@ -44,25 +46,43 @@ static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_
     mqtt_manager_disconnect();
 }
 
+static void gpio_event_callback(uint8_t gpio_num, pad_event_t event) {
+    
+    if (gpio_num == GPIO_NUM_0 && event == GPIO_LONG_CLICK) {
+        storage_manager_reset();
+        esp_restart();
+    }
+}
+
 static void main_task(void *args) {
 
-    esp_event_loop_create_default();
+    esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
+    
+     pad_conf_t reset_pad_conf = {
+        .gpio_number = GPIO_NUM_0,
+        .direction = GPIO_INPUT,
+        .pull_mode = GPIO_PULL_UP,
+        .interrput_mode = GPIO_INTERRUPT_FALLING,
+        .callback = &gpio_event_callback
+    };
 
-    storage_manager_init();
+    gpio_manager_init();
+    gpio_manager_configure_pad(&reset_pad_conf);
 
-    if (device_helper_is_enrollment_completed()) {
-        esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
-        pms_conf.callback = &pms_callback,
-        data_sender_init();
-        idf_pmsx5003_init(&pms_conf);
-        wifi_manager_init();
-        mqtt_manager_init();
-    } else {
-        esp_event_handler_register(WIFI_MANAGER_PROVISIONING_EVENTS, ESP_EVENT_ANY_ID, wifi_provisioning_event_handler, NULL);
-        wifi_provisioning_start();
-    }
+    mqtt_certificates_t mqtt_certs = {
+        .ca_cert = device_helper_get_ca_cert(),
+        .device_cert = device_helper_get_device_cert(),
+        .device_key = device_helper_get_device_key(),
+    };
 
-     while (true) {
+    wifi_manager_init();
+    mqtt_manager_init(&mqtt_certs);
+    data_sender_init();
+
+    pms_conf.callback = &pms_callback,
+    idf_pmsx5003_init(&pms_conf);
+
+    while (true) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
@@ -70,8 +90,6 @@ static void main_task(void *args) {
 }
 
 void app_main(void) {
-
-    printf("Hello world!\n");
 
     /* Print chip information */
     esp_chip_info_t chip_info;
@@ -89,5 +107,14 @@ void app_main(void) {
 
     ESP_LOGI(TAG, "[APP] Free memory: %d bytes", esp_get_free_heap_size());
     
-    xTaskCreate(main_task, "main task", 4096, NULL, 5, NULL);
+    esp_event_loop_create_default();
+
+    storage_manager_init();
+
+    if (device_helper_is_enrollment_completed()) {
+        xTaskCreate(main_task, "main task", 4096, NULL, 5, NULL);
+    } else {
+        esp_event_handler_register(WIFI_MANAGER_PROVISIONING_EVENTS, ESP_EVENT_ANY_ID, wifi_provisioning_event_handler, NULL);
+        wifi_provisioning_start();
+    }
 }
