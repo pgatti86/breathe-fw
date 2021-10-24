@@ -12,4 +12,10 @@ bool device_helper_is_enrollment_completed();
 
 bool device_helper_set_enrollment_status(enrollment_status_t status);
 
+char *device_helper_get_ca_cert();
+
+char *device_helper_get_device_cert();
+
+char *device_helper_get_device_key();
+
 #endif

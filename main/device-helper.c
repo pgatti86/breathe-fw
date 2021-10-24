@@ -40,3 +40,15 @@ bool device_helper_set_enrollment_status(enrollment_status_t status) {
     bool value = status == COMPLETED;
     return storage_manager_set_prefs_bool_value(ENROLLMENT_KEY, value);
 }
+
+char *device_helper_get_ca_cert() {
+    return storage_manager_read_file("/security/ca.pem");
+}
+
+char *device_helper_get_device_cert() {
+    return storage_manager_read_file("/security/client.pem");
+}
+
+char *device_helper_get_device_key() {
+    return storage_manager_read_file("/security/client.key");
+}
