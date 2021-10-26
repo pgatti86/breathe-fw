@@ -10,7 +10,9 @@ typedef struct {
     char *device_key;
 } mqtt_certificates_t;
 
-uint32_t mqtt_manager_init(mqtt_certificates_t *mqtt_certs);
+typedef void(*load_certs_f)(mqtt_certificates_t*);
+
+uint32_t mqtt_manager_init(load_certs_f f);
 
 uint32_t mqtt_manager_connect();
 

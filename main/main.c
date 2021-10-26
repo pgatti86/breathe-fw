@@ -26,6 +26,13 @@ static void pms_callback(pm_data_t *sensor_data) {
     data_sender_enqueue_pms_data(sensor_data);
 }
 
+static void load_mqtt_certificates(mqtt_certificates_t *out) {
+
+    out->ca_cert = device_helper_get_ca_cert();
+    out->device_cert = device_helper_get_device_cert();
+    out->device_key = device_helper_get_device_key();
+}
+
 static void wifi_provisioning_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
     
     if (id == PROVISIONING_COMPLETED) {
@@ -69,14 +76,8 @@ static void main_task(void *args) {
     gpio_manager_init();
     gpio_manager_configure_pad(&reset_pad_conf);
 
-    mqtt_certificates_t mqtt_certs = {
-        .ca_cert = device_helper_get_ca_cert(),
-        .device_cert = device_helper_get_device_cert(),
-        .device_key = device_helper_get_device_key(),
-    };
-
     wifi_manager_init();
-    mqtt_manager_init(&mqtt_certs);
+    mqtt_manager_init(&load_mqtt_certificates);
     data_sender_init();
 
     pms_conf.callback = &pms_callback,
