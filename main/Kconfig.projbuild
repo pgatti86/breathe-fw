@@ -6,18 +6,6 @@ config BROKER_URL
     help
         URL of the broker to connect to
 
-config MQTT_USERNAME
-    string "Mqtt username"
-    default "username"
-    help
-        Device username for mqtt connection
-
-config MQTT_PASSWORD
-    string "Mqtt password"
-    default "password"
-    help
-        Device password for mqtt connection
-
 config SNTP_SERVER
     string "SNTP server"
     default "pool.ntp.org"
