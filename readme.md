@@ -60,3 +60,14 @@ I will soon provide a method for generating certificates.
 At compilation time these files will be automatically copied to device flash.
 
 **NB: don't change these files name**
+
+## Enrollment
+
+This device use TI smart-config.
+At the momento to connect the device to your WiFi network you must use one of those app:
+
+- [Android](https://play.google.com/store/apps/details?id=com.dparts.esptouch&hl=it&gl=US)
+- [Android](https://play.google.com/store/apps/details?id=com.khoazero123.iot_esptouch_demo&hl=it&gl=US)
+- [iOS](https://apps.apple.com/us/app/espressif-esptouch/id1071176700)
+
+I will soon provide an app for device enroll and recorded data visualization
