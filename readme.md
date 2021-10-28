@@ -64,10 +64,16 @@ At compilation time these files will be automatically copied to device flash.
 ## Enrollment
 
 This device use TI smart-config.
-At the momento to connect the device to your WiFi network you must use one of those app:
+To connect the device to your WiFi network you must use one of those app:
 
 - [Android](https://play.google.com/store/apps/details?id=com.dparts.esptouch&hl=it&gl=US)
 - [Android](https://play.google.com/store/apps/details?id=com.khoazero123.iot_esptouch_demo&hl=it&gl=US)
 - [iOS](https://apps.apple.com/us/app/espressif-esptouch/id1071176700)
 
 I will soon provide an app for device enroll and recorded data visualization
+
+## Reset
+
+You can reset the device by pressing and holding the esp32 BOOT button for 3s.
+If your board does't have such button you can wire a button to any GPIO. 
+Configure the selected GPIO as show in main.c file 
