@@ -2,7 +2,7 @@ menu "Breathe config"
 
 config BROKER_URL
     string "Broker URL"
-    default "mqtt://mqtt.eclipseprojects.io"
+    default "mqtts://breathe.gatti.dev:8883"
     help
         URL of the broker to connect to
 
