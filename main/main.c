@@ -7,6 +7,7 @@
 #include "nvs_flash.h"
 #include "wifi-events.h"
 #include "wifi-manager.h"
+#include "mqtt-events.h"
 #include "mqtt-manager.h"
 #include "idf-pmsx003.h"
 #include "data-sender.h"
@@ -51,6 +52,13 @@ static void wifi_event_handler(void* handler_args, esp_event_base_t base, int32_
     } 
 
     mqtt_manager_disconnect();
+}
+
+static void mqtt_event_handler(void* handler_args, esp_event_base_t base, int32_t id, void* event_data) {
+    
+    if (id == MQTT_MANAGER_EVENT_CONNECTED) {
+        data_sender_provision_device();
+    } 
 }
 
 static void gpio_event_callback(uint8_t gpio_num, pad_event_t event) {

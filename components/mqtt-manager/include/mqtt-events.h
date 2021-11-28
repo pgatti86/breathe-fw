@@ -1,0 +1,13 @@
+#ifndef MQTT_MANAGER_INCLUDE_MQTT_EVENTS_H_
+#define MQTT_MANAGER_INCLUDE_MQTT_EVENTS_H_
+
+#include "esp_event.h"
+
+ESP_EVENT_DECLARE_BASE(MQTT_MANAGER_EVENTS);
+
+enum {                                      
+    MQTT_MANAGER_EVENT_CONNECTED,
+    MQTT_MANAGER_EVENT_DISCONNECTED
+};
+
+#endif

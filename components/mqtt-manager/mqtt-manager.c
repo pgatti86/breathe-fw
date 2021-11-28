@@ -1,6 +1,6 @@
 #include "mqtt-manager.h"
+#include "mqtt-events.h"
 
-#include "esp_event.h"
 #include "mqtt_client.h"
 #include "esp_log.h"
 
@@ -19,6 +19,10 @@ static mqtt_certificates_t mqtt_certs = {
 static bool is_connected = false;
 
 static bool is_started = false;
+
+static void mqtt_manager_send_event(int32_t event_id);
+
+ESP_EVENT_DEFINE_BASE(MQTT_MANAGER_EVENTS);
 
 static void mqtt_manager_free_certificate_buffers() {
     
@@ -75,10 +79,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
             is_connected = true;
             mqtt_manager_free_certificate_buffers();
+            mqtt_manager_send_event(MQTT_MANAGER_EVENT_CONNECTED);
             break;
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
             is_connected = false;
+            mqtt_manager_send_event(MQTT_MANAGER_EVENT_DISCONNECTED);
             break;
         case MQTT_EVENT_SUBSCRIBED:
             ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
@@ -144,4 +150,8 @@ uint32_t mqtt_manager_disconnect() {
     }
 
     return esp_mqtt_client_disconnect(client);
+}
+
+static void mqtt_manager_send_event(int32_t event_id) {
+    esp_event_post(MQTT_MANAGER_EVENTS, event_id, NULL, 0, portMAX_DELAY);
 }

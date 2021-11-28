@@ -12,9 +12,27 @@
 
 static const char *TAG = "data-sender";
 
+static const char *PROVISIONING_TEMPLATE_TOPIC = "%s/provisioning";
+
 static const char *POLLUTION_TELEMETRY_TEMPLATE_TOPIC = "%s/telemetry/pollution";
 
 static QueueHandle_t mqtt_pms_data_output_queue;
+
+static cJSON* data_sender_prepare_provisioning_message(char *device_id) {
+
+    cJSON *provisioning_data = cJSON_CreateObject();
+
+    cJSON *deviceId = cJSON_CreateString(device_id);
+    cJSON_AddItemToObject(provisioning_data, "deviceId", deviceId);
+
+    cJSON *properties = cJSON_CreateArray();
+    cJSON_AddItemToObject(provisioning_data, "properties", properties);
+
+    cJSON *capabilities = cJSON_CreateArray();
+    cJSON_AddItemToObject(provisioning_data, "capabilities", capabilities);
+
+    return provisioning_data;
+}
 
 static void data_sender_log_pms_data(pm_data_t *sensor_data) {
 
@@ -113,6 +131,24 @@ bool data_sender_init() {
     }
 
     return is_queue_created;
+}
+
+bool data_sender_provision_device() {
+
+    device_data_t *device_data = device_helper_get_device_config();
+    if (device_data == NULL) {
+        return;
+    }
+
+    cJSON *json_data = data_sender_prepare_provisioning_message(device_data->uid);
+    char *payload = cJSON_PrintUnformatted(json_data);
+
+    char topic[80] = {'\0'};
+    sprintf(topic, PROVISIONING_TEMPLATE_TOPIC, device_data->uid);
+    mqtt_manager_publish(topic, payload);
+    
+    cJSON_Delete(json_data);
+    free(payload);
 }
 
 bool data_sender_enqueue_pms_data(pm_data_t *data) {
