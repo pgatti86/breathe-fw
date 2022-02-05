@@ -10,6 +10,12 @@ config SNTP_SERVER
     string "SNTP server"
     default "pool.ntp.org"
     help
-        SNTP server        
+        SNTP server
+
+config DHT_GPIO
+    int "DHT GPIO"
+    default 21
+    help
+        GPIO connected to DHT sensor
 
 endmenu

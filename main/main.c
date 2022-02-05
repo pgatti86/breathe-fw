@@ -19,6 +19,7 @@
 #include "device-helper.h"
 #include "gpio-manager.h"
 #include "driver/gpio.h"
+#include "dht-manager.h"
 
 static const char *TAG = "breathe-app";
 
@@ -90,6 +91,8 @@ static void main_task(void *args) {
 
     pms_conf.callback = &pms_callback,
     idf_pmsx5003_init(&pms_conf);
+
+    dht_manager_start_update_task();
 
     while (true) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
