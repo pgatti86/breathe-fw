@@ -72,6 +72,8 @@ static void gpio_event_callback(uint8_t gpio_num, pad_event_t event) {
 
 static void main_task(void *args) {
 
+    esp_event_handler_register(MQTT_MANAGER_EVENTS, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
+    
     esp_event_handler_register(WIFI_MANAGER_EVENTS, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
     
      pad_conf_t reset_pad_conf = {

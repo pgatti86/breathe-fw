@@ -16,14 +16,38 @@ static const char *PROVISIONING_TEMPLATE_TOPIC = "%s/provisioning";
 
 static const char *POLLUTION_TELEMETRY_TEMPLATE_TOPIC = "%s/telemetry/pollution";
 
+static const char *TEMPERATURE_TELEMETRY_TEMPLATE_TOPIC = "%s/telemetry/temperature";
+
+static const char *HUMIDITY_TELEMETRY_TEMPLATE_TOPIC = "%s/telemetry/humidity";
+
 static QueueHandle_t mqtt_pms_data_output_queue;
+
+static void data_sender_init_json_message(cJSON *message, char *device_id) {
+
+    cJSON *deviceId = cJSON_CreateString(device_id);
+    cJSON_AddItemToObject(message, "deviceId", deviceId);
+
+    if (time_manager_is_time_synched()) {
+    
+        char timestamp[ISO_DATE_LENGTH] = {'\0'};
+        time_manager_format_time(timestamp, ISO_DATE_LENGTH);
+        cJSON *t = cJSON_CreateString(timestamp);
+        cJSON_AddItemToObject(message, "timestamp", t);
+    }
+}
+
+static bool data_sender_publish_message(const char *topic_template, char *device_uid, char *payload) {
+
+    char topic[80] = {'\0'};
+    sprintf(topic, topic_template, device_uid);
+    return mqtt_manager_publish(topic, payload);
+}
 
 static cJSON* data_sender_prepare_provisioning_message(char *device_id) {
 
     cJSON *provisioning_data = cJSON_CreateObject();
 
-    cJSON *deviceId = cJSON_CreateString(device_id);
-    cJSON_AddItemToObject(provisioning_data, "deviceId", deviceId);
+    data_sender_init_json_message(provisioning_data, device_id);
 
     cJSON *properties = cJSON_CreateArray();
     cJSON_AddItemToObject(provisioning_data, "properties", properties);
@@ -51,8 +75,7 @@ static cJSON* data_sender_prepare_pms_message(char *device_id, pm_data_t *data) 
 
     cJSON *pms_data = cJSON_CreateObject();
 
-    cJSON *deviceId = cJSON_CreateString(device_id);
-    cJSON_AddItemToObject(pms_data, "deviceId", deviceId);
+    data_sender_init_json_message(pms_data, device_id);
 
     cJSON *pm1_0 = cJSON_CreateNumber(data->pm1_0);
     cJSON_AddItemToObject(pms_data, "pm1.0", pm1_0);
@@ -81,15 +104,31 @@ static cJSON* data_sender_prepare_pms_message(char *device_id, pm_data_t *data) 
     cJSON *particles10_0 = cJSON_CreateNumber(data->particles_100um);
     cJSON_AddItemToObject(pms_data, "particlesCount10.0", particles10_0);
 
-    if (time_manager_is_time_synched()) {
-        
-        char timestamp[ISO_DATE_LENGTH] = {'\0'};
-        time_manager_format_time(timestamp, ISO_DATE_LENGTH);
-        cJSON *t = cJSON_CreateString(timestamp);
-        cJSON_AddItemToObject(pms_data, "timestamp", t);
-    }
-
     return pms_data;
+}
+
+static cJSON* data_sender_prepare_temperature_message(char *device_id, float *temperature) {
+
+    cJSON *temperature_data = cJSON_CreateObject();
+
+    data_sender_init_json_message(temperature_data, device_id);
+
+    cJSON *t = cJSON_CreateNumber(*temperature);
+    cJSON_AddItemToObject(temperature_data, "temperature", t);
+
+    return temperature_data;
+}
+
+static cJSON* data_sender_prepare_humidity_message(char *device_id, float *humidity) {
+
+    cJSON *humidity_data = cJSON_CreateObject();
+
+    data_sender_init_json_message(humidity_data, device_id);
+    
+    cJSON *h = cJSON_CreateNumber(*humidity);
+    cJSON_AddItemToObject(humidity_data, "humidity", h);
+    
+    return humidity_data;
 }
 
 static void pms_data_sender_task(void *args) {
@@ -109,9 +148,7 @@ static void pms_data_sender_task(void *args) {
         cJSON *json_data = data_sender_prepare_pms_message(device_data->uid, &pms_data);
         char *payload = cJSON_PrintUnformatted(json_data);
         
-        char topic[80] = {'\0'};
-        sprintf(topic, POLLUTION_TELEMETRY_TEMPLATE_TOPIC, device_data->uid);
-        mqtt_manager_publish(topic, payload);
+        data_sender_publish_message(POLLUTION_TELEMETRY_TEMPLATE_TOPIC, device_data->uid, payload);
         
         cJSON_Delete(json_data);
         free(payload);
@@ -137,18 +174,18 @@ bool data_sender_provision_device() {
 
     device_data_t *device_data = device_helper_get_device_config();
     if (device_data == NULL) {
-        return;
+        return false;
     }
 
     cJSON *json_data = data_sender_prepare_provisioning_message(device_data->uid);
     char *payload = cJSON_PrintUnformatted(json_data);
 
-    char topic[80] = {'\0'};
-    sprintf(topic, PROVISIONING_TEMPLATE_TOPIC, device_data->uid);
-    mqtt_manager_publish(topic, payload);
-    
+    bool result = data_sender_publish_message(PROVISIONING_TEMPLATE_TOPIC, device_data->uid, payload);
+
     cJSON_Delete(json_data);
     free(payload);
+
+    return result;
 }
 
 bool data_sender_enqueue_pms_data(pm_data_t *data) {
@@ -159,4 +196,40 @@ bool data_sender_enqueue_pms_data(pm_data_t *data) {
     
     int result = xQueueGenericSend(mqtt_pms_data_output_queue, data, 0, queueSEND_TO_BACK);
     return result == pdTRUE;
+}
+
+bool data_sender_send_temperature_data(float data) {
+    
+    device_data_t *device_data = device_helper_get_device_config();
+    if (device_data == NULL) {
+        return false;
+    }
+
+    cJSON *json_data = data_sender_prepare_temperature_message(device_data->uid, &data);
+    char *payload = cJSON_PrintUnformatted(json_data);
+
+    bool result = data_sender_publish_message(TEMPERATURE_TELEMETRY_TEMPLATE_TOPIC, device_data->uid, payload);
+    
+    cJSON_Delete(json_data);
+    free(payload);
+
+    return result;
+}
+
+bool data_sender_send_humidity_data(float data) {
+
+    device_data_t *device_data = device_helper_get_device_config();
+    if (device_data == NULL) {
+        return false;
+    }
+
+    cJSON *json_data = data_sender_prepare_humidity_message(device_data->uid, &data);
+    char *payload = cJSON_PrintUnformatted(json_data);
+
+    bool result = data_sender_publish_message(HUMIDITY_TELEMETRY_TEMPLATE_TOPIC, device_data->uid, payload);
+    
+    cJSON_Delete(json_data);
+    free(payload);
+
+    return result;
 }
