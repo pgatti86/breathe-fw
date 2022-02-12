@@ -6,9 +6,10 @@
 #include "app-models.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include  "freertos/queue.h"
+#include "freertos/queue.h"
 #include "esp_log.h"
 #include "cJSON.h"
+#include "ota-manager.h"
 
 static const char *TAG = "data-sender";
 
@@ -48,6 +49,10 @@ static cJSON* data_sender_prepare_provisioning_message(char *device_id) {
     cJSON *provisioning_data = cJSON_CreateObject();
 
     data_sender_init_json_message(provisioning_data, device_id);
+
+    char *fw_version = ota_manager_get_fw_version();
+    cJSON *fw = cJSON_CreateString(fw_version);
+    cJSON_AddItemToObject(provisioning_data, "fwVersion", fw);
 
     cJSON *properties = cJSON_CreateArray();
     cJSON_AddItemToObject(provisioning_data, "properties", properties);

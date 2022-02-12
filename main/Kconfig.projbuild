@@ -18,4 +18,10 @@ config DHT_GPIO
     help
         GPIO connected to DHT sensor
 
+config FW_UPDATE_URL
+    string "Firmware update URL"
+    default "https://breathe.gatti.dev/fw/latest"
+    help
+        URL of the latest available firmware        
+
 endmenu
