@@ -43,7 +43,7 @@ As file name use partitions.csv
 You also need to change the embedded flash size: In "Serial flasher" menù enter "Flash size" sub-menù and select the memory size that match your module. The minimum 
 flash size required is 4MB.
 
-## OTA
+### OTA
 
 You must allow firmware OTA update to run using http instead of https.
 In Component config -> ESP HTTPS OTA, enable allow HTTP for OTA so the URI without TLS is accepted
